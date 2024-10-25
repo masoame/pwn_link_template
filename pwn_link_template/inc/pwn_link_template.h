@@ -23,18 +23,17 @@ namespace pwn_link_template {
 
 	using pwn_handle = std::shared_ptr<pwn_data>;
 
-
-	std::size_t deafult_send_callback(std::string_view data);
+	extern std::size_t deafult_send_callback(std::string_view data);
 
 	//初始化全局网络
-	bool initglobalNetwork();
+	extern bool initglobalNetwork();
+
 	//释放全局网络
-	void releaseglobalNetwork();
+	extern void releaseglobalNetwork();
 
 	//连接到指定服务器
-	pwn_handle linktoServer(std::string_view ip, u_short port,std::size_t send_buffer_size = 1024 * 1024);
+	extern pwn_handle linktoServer(std::string_view ip, u_short port,std::size_t send_buffer_size = 1024 * 1024);
+
 	//等待用户退出
-	void wait_to_close(pwn_handle handle);
-
-
+	extern void wait_to_close(pwn_handle handle);
 }
