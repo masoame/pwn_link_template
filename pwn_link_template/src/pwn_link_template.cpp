@@ -8,7 +8,9 @@ namespace pwn_link_template {
 	std::size_t deafult_send_callback(std::string_view _data) {
 		auto send_callback_ptr = key_callback.find(std::string{ _data });
 		if (send_callback_ptr != key_callback.end()) {
-			return (*send_callback_ptr).second((char*)_data.data());
+			send_stream ss{ (char*)_data.data() };
+			(*send_callback_ptr).second(ss);
+			return ss.pos;
 		}
 		else {
 			return _data.size();
@@ -54,8 +56,8 @@ namespace pwn_link_template {
 		auto server_addr = reinterpret_cast<sockaddr_in*>(res->ai_addr);
 		server_addr->sin_family = AF_INET;
 		server_addr->sin_port = htons(port);
-		//设置超时返回
-		long recv_timeout = 500; //单位毫秒
+		long recv_timeout = 500;
+
 		if (::setsockopt(handle->sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&recv_timeout, sizeof(recv_timeout)) == SOCKET_ERROR)
 		{
 			std::osyncstream{ std::cout } << "\033[31m" << "Error setting recv timeout" << "\033[0m" << std::endl;
@@ -80,22 +82,34 @@ namespace pwn_link_template {
 					break;
 				}
 				else {
+
+					{
+						std::unique_lock lock{ handle->_recv_buffer.recv_mutex };
+						handle->_recv_buffer.recv_deque.insert(handle->_recv_buffer.recv_deque.cend(), buffer, buffer + _size);
+						handle->_recv_buffer.recv_cv.notify_one();
+					}
+
 					(std::osyncstream{ std::cout } << "\033[33m").write(buffer, _size) << "\033[0m";
 				}
 			}
 			handle->send_thread.request_stop();
-			});
+		});
+
 		handle->send_thread = std::jthread([handle, send_buffer_size](std::stop_token st) {
 			std::osyncstream{ std::cout } << "\033[32m" << "Enter message to send:" << "\033[0m" << std::endl;
 			long long send_size = 0;
 			std::vector<char> send_buffer;
 			send_buffer.resize(send_buffer_size);
 			while (st.stop_requested() == false) {
+
 				std::cin.getline(send_buffer.data(), send_buffer.size() - 1, '\n');
+
 				send_size = deafult_send_callback(send_buffer.data());
 				if (send_size == -1) break;
+
 				send_buffer[send_size] = '\n';
 				send_size++;
+
 				while (send_size > 0) {
 					int len = ::send(handle->sock, send_buffer.data(), send_size, 0);
 					if (len > 0) {
@@ -105,10 +119,13 @@ namespace pwn_link_template {
 						goto SEND_FUNCTION_END;
 					}
 				}
+
 			}
 		SEND_FUNCTION_END:
-			handle->recv_thread.request_stop(); return;
-			});
+			handle->recv_thread.request_stop(); 
+			return;
+		});
+
 		return handle;
 	}
 	void wait_to_close(pwn_handle handle)
