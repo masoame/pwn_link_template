@@ -25,15 +25,11 @@ namespace pwn_link_template {
 
 	extern std::size_t deafult_send_callback(std::string_view data);
 
-	//初始化全局网络
 	extern bool initglobalNetwork();
 
-	//释放全局网络
 	extern void releaseglobalNetwork();
 
-	//连接到指定服务器
 	extern pwn_handle linktoServer(std::string_view ip, u_short port,std::size_t send_buffer_size = 1024 * 1024);
 
-	//等待用户退出
 	extern void wait_to_close(pwn_handle handle);
 }
