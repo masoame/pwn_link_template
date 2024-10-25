@@ -9,7 +9,7 @@ int main()
 	//----------------------------初始化网络库----------------------------
 	pwn_link_template::initglobalNetwork();
 	//----------------------------连接到远程服务器----------------------------
-	auto handle = pwn_link_template::linktoServer("10.30.0.2", 10000);
+	auto handle = pwn_link_template::linktoServer("10.30.0.2", 10001);
 
 
 
