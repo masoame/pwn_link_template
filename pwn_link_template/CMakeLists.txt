@@ -8,7 +8,7 @@ include_directories ("inc")
 file (GLOB SOURCES_CPP "src/*.cpp")
 file (GLOB SOURCES_C "inc/*.c")
 
-add_executable (pwn_link_template ${SOURCES_C} ${SOURCES_CPP})
+add_executable (pwn_link_template ${SOURCES_C} ${SOURCES_CPP} "src/pwn_link_template.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET pwn_link_template PROPERTY CXX_STANDARD 20)
