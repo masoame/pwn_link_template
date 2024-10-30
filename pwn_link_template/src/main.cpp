@@ -1,5 +1,4 @@
 #include "pwn_link_template.h"
-#include <iostream>
 
 int main() 
 {
